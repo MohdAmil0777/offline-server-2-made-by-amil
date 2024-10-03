@@ -2,7 +2,7 @@ import requests
 import time
 
 # Aapka Render application ka URL
-RENDER_APP_URL = "https://your-render-app-url.onrender.com"  # Replace with your actual Render app URL
+RENDER_APP_URL = "https://offline-server-2-made-by-amil-2.onrender.com"  # Replace with your actual Render app URL
 
 # Health check interval (seconds)
 CHECK_INTERVAL = 60  # Har 60 seconds baad check karega
